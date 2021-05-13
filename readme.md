@@ -1,113 +1,101 @@
 # MASKOT - Backend
 
-## Overview
+## Table of contents
+  * [Requirements](#requirements)
+- [Install Repo & Packages](#install-repo---packages)
+  * [1. Clone Repository:](#1-clone-repository-)
+  * [2. Install NPM Packages:](#2-install-npm-packages-)
+  * [3. Install Composer Packages:](#3-install-composer-packages-)
+  * [4. Link storage:](#4-link-storage-)
+- [Prepare VM](#prepare-vm)
+  * [1. Create environment file:](#1-create-environment-file-)
+  * [2. Edit environment file:](#2-edit-environment-file-)
+  * [3. Make Homestead file:](#3-make-homestead-file-)
+  * [4. Edit Homestead.yaml:](#4-edit-homesteadyaml-)
 
-The Maskot Backend provides CMS access to allow standard CRUD functionality to the App data
+## Before you install
 
-The Maskot Backend also provides an API for the mobile app.
+### Requirements
 
-This is an update to the readme..
 
-# Development
-## Installation
+[Full Requirements Page](https://www.notion.so/Maskot-da6fb6a910b840fe8e8ebbe2bf0c39b3)
+
+- [Homebrew](https://www.notion.so/HomeBrew-b1cc1dbaa3db4a148a07953c0b772ad7) Latest
+- [PHP](https://www.notion.so/PHP-60b5ef2e2bde4d559c8dc27714a0a326) 7.3
+- [NPM](https://www.notion.so/NPM-20b8a81d6243444f8ef844ec0655ab0a) Latest
+- [Vagrant](https://www.notion.so/Vagrant-653a00de2f9b4991a9832f3058545f39) Latest
+- [VirtualBox](https://www.notion.so/VirtualBox-a8a846d5b1374be39cb09df29130fed8) Latest
+- [Homestead](https://www.notion.so/Homestead-e4bf957a632f433b925d432b9e9f453e) Latest
+- [Composer](https://www.notion.so/Composer-63392bc980454f05ad0a9d37fdbe897c) 1.10.1
+- [Sequel Pro](https://www.notion.so/Sequel-Pro-ebb9691c34134109ba5c50d3a6c2c309)
+- .env file (Ask Developer)
+
+## Install Repo & Packages
+
+### 1. Clone Repository:
 ```sh
-    // Project Setup
-    $ git clone --recursive git@github.com:mirkco/maskot-backend.git .
-    $ composer install
-    $ npm install
-    $ php artisan storage:link
+git clone --recursive git@github.com:mirkco/maskot-backend.git .
 ```
 
-Now all necessary files are downloaded, spin up the VM.
-This package is equipped to run via [Homestead](https://laravel.com/docs/5.3/homestead)
-
+### 2. Install NPM Packages:
 ```sh
-    $ cp .env.homestead .env
-    
-    # NOTE: THE APP_KEY (generated below) MUST BE THE EXACT SAME ON FRONTEND AND BACKEND
-    $ php artisan key:generate
-    
-    $ php vendor/bin/homestead make
-    $ vagrant up
+npm install
 ```
 
-Finally add `127.0.0.1 backend.maskot.dev` to your `/etc/hosts` file.
-
-### Database Configuration
-This project then requires at least 2 databases to operate, and development requires and additional 2 (making 4 in total):
-
-Database 1: `maskot_frontend_dev` - The database for the Frontend (only required if you don't have an instance of the frontend already running)
-
-Database 2: `team_maskot` - The initial/default Club all users are subscribed to
-
-Database 3: `sample_1` - An additional testing Club
-
-Database 4: `sample_2` - An additional testing Club
-
-SSH into your environment.
-Run the following custom artisan command to deploy everything:
+### 3. Install Composer Packages:
 ```sh
-    $ php artisan maskot:deploy
+composer install
 ```
 
-Note you can completely reset all databases with the following command
+### 4. Link storage:
 ```sh
-    $ php artisan maskot:reset
+php artisan storage:link
 ```
 
+## Prepare VM
 
-### Additional required setup
-Both the frontend and backend make use of many third party services, all with individual API keys etc.
-
-All this information is set in the `.env` file, however they are left out of source control for obvious reasons. You will need to obtain the required values for service from that service's control panel.
-
-Required `.env` vars are (taken from `.env.homestead`):
-
-```
-
-// AWS S3 File Storage
-AWS_S3_KEY=
-AWS_S3_SECRET=
-AWS_S3_REGION=
-AWS_S3_BUCKET=
-
-// Mail - Staging/Production use Sendgrid
-MAIL_DRIVER=smtp
-MAIL_HOST=mailtrap.io
-MAIL_PORT=2525
-MAIL_USERNAME=null
-MAIL_PASSWORD=null
-MAIL_ENCRYPTION=null
-
-// Pusher.io for Notification Broadcasting
-PUSHER_APP_ID=
-PUSHER_APP_KEY=
-PUSHER_APP_SECRET=
-
-// Google Places API for address searching
-GOOGLE_PLACES_API_KEY=
-
-// Facebook API for social auth
-FACEBOOK_APP_ID=
-FACEBOOK_APP_SECRET=
-
-// Maskot Stripe Account - Test Keys
-STRIPE_KEY=
-STRIPE_SECRET=
-STRIPE_DEV_CLIENT_ID=
-```
-
-
-
-## Usage
-Access via `backend.maskot.dev`
-
-
-# Tests
+### 1. Create environment file:
 ```sh
-    $ cp .env.circleci .env
-    $ php artisan key:generate
-    $ php artisan migrate --path database/migrations/frontend --database=frontend
-    $ php artisan migrate --path database/migrations/backend --database=backend
-    $ php artisan db:seed --class=BackendSeeder --database=backend
+cp .env.homestead .env
 ```
+
+### 2. Edit environment file:
+In project's root folder, replace .env with file provided by developer.
+
+### 3. Make Homestead file:
+```sh
+php vendor/bin/homestead make
+```
+
+### 4. Edit Homestead.yaml:
+**1.** Locate Homestead.yaml file in project't root folder, replace with:
+```sh
+ip: 192.168.10.10
+memory: 2048
+cpus: 1
+hostname: maskot-frontend
+name: maskot-frontend
+provider: virtualbox
+authorize: ~/.ssh/id_rsa.pub
+keys:
+  - ~/.ssh/id_rsa
+folders:
+  - map: [localPath]/maskot-frontend
+    to: /home/vagrant/maskot-frontend
+  - map: [localPath]/maskot-backend
+    to: /home/vagrant/maskot-backend
+sites:
+  - map: frontend.default.mirkdev.co
+    to: /home/vagrant/maskot-frontend/public
+  - map: default.default.mirkdev.co
+    to: /home/vagrant/maskot-backend/public
+databases:
+  - homestead
+  - maskot_frontend_dev
+  - team_maskot
+
+```
+**2.** Replace **[localPath]** with local project's path (E.g. /Users/Developer/Projects/maskot-backend)
+
+
+
